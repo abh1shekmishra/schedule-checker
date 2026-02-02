@@ -1,25 +1,78 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-interface PostStatus {
-  instagram: boolean
-  youtube: boolean
+type PostType = 'instaReel' | 'instaTrialReel' | 'youtubeVideo' | 'youtubeShorts'
+
+interface DayStatus {
+  instaReel: boolean
+  instaTrialReel: boolean
+  youtubeVideo: boolean
+  youtubeShorts: boolean
 }
 
 interface PostData {
-  [dateKey: string]: PostStatus
+  [dateKey: string]: DayStatus
+}
+
+const EMPTY_STATUS: DayStatus = {
+  instaReel: false,
+  instaTrialReel: false,
+  youtubeVideo: false,
+  youtubeShorts: false,
+}
+
+const isDayStatus = (value: unknown): value is DayStatus => {
+  if (!value || typeof value !== 'object') return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.instaReel === 'boolean' &&
+    typeof v.instaTrialReel === 'boolean' &&
+    typeof v.youtubeVideo === 'boolean' &&
+    typeof v.youtubeShorts === 'boolean'
+  )
+}
+
+const normalizeStoredData = (raw: unknown): PostData => {
+  if (!raw || typeof raw !== 'object') return {}
+  const obj = raw as Record<string, unknown>
+  const result: PostData = {}
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (isDayStatus(value)) {
+      result[key] = value
+      continue
+    }
+
+    // Backward compatibility with old shape: { instagram: boolean, youtube: boolean }
+    if (value && typeof value === 'object') {
+      const legacy = value as Record<string, unknown>
+      const instagram = Boolean(legacy.instagram)
+      const youtube = Boolean(legacy.youtube)
+
+      if (instagram || youtube) {
+        result[key] = {
+          ...EMPTY_STATUS,
+          instaReel: instagram,
+          youtubeShorts: youtube,
+        }
+      }
+    }
+  }
+
+  return result
 }
 
 function App() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedMonth, setSelectedMonth] = useState(new Date())
   const [postData, setPostData] = useState<PostData>({})
+  const [activeDate, setActiveDate] = useState<Date | null>(null)
 
   // Load data from localStorage
   useEffect(() => {
     const savedData = localStorage.getItem('schedule-tracker-data')
     if (savedData) {
-      setPostData(JSON.parse(savedData))
+      setPostData(normalizeStoredData(JSON.parse(savedData)))
     }
   }, [])
 
@@ -40,15 +93,37 @@ function App() {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
   }
 
-  const togglePost = (date: Date, platform: 'instagram' | 'youtube') => {
-    const key = getDateKey(date)
-    setPostData(prev => ({
-      ...prev,
-      [key]: {
-        instagram: platform === 'instagram' ? !(prev[key]?.instagram || false) : (prev[key]?.instagram || false),
-        youtube: platform === 'youtube' ? !(prev[key]?.youtube || false) : (prev[key]?.youtube || false)
+  const hasAnyInsta = (status: DayStatus) => status.instaReel || status.instaTrialReel
+  const hasAnyYouTube = (status: DayStatus) => status.youtubeVideo || status.youtubeShorts
+
+  const openDay = (date: Date) => {
+    setActiveDate(date)
+  }
+
+  const closeDay = () => {
+    setActiveDate(null)
+  }
+
+  const toggleTypeForDateKey = (dateKey: string, type: PostType) => {
+    setPostData(prev => {
+      const current = prev[dateKey] ?? EMPTY_STATUS
+      const next: DayStatus = {
+        ...current,
+        [type]: !current[type],
       }
-    }))
+
+      const shouldKeep = Object.values(next).some(Boolean)
+
+      if (!shouldKeep) {
+        const { [dateKey]: _, ...rest } = prev
+        return rest
+      }
+
+      return {
+        ...prev,
+        [dateKey]: next,
+      }
+    })
   }
 
   const getDaysInMonth = (date: Date) => {
@@ -92,35 +167,25 @@ function App() {
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), day)
       const dateKey = getDateKey(date)
-      const status = postData[dateKey] || { instagram: false, youtube: false }
+      const status = postData[dateKey] || EMPTY_STATUS
       const today = isToday(date)
 
       days.push(
-        <div key={day} className={`calendar-day ${today ? 'today' : ''}`}>
+        <button
+          key={day}
+          type="button"
+          className={`calendar-day day-btn ${today ? 'today' : ''}`}
+          onClick={() => openDay(date)}
+          aria-label={`Open ${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`}
+        >
           <div className="day-number">{day}</div>
-          <div className="post-status">
-            <button
-              className={`status-btn instagram ${status.instagram ? 'active' : ''}`}
-              onClick={() => togglePost(date, 'instagram')}
-              title="Instagram"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" fill="none" stroke="#fff" strokeWidth="2"></path>
-                <circle cx="17.5" cy="6.5" r="1.5" fill="#fff"></circle>
-              </svg>
-            </button>
-            <button
-              className={`status-btn youtube ${status.youtube ? 'active' : ''}`}
-              onClick={() => togglePost(date, 'youtube')}
-              title="YouTube"
-            >
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
-              </svg>
-            </button>
+          <div className="type-grid" aria-hidden="true">
+            <span className={`type-pill insta ${status.instaReel ? 'active' : ''}`}>IR</span>
+            <span className={`type-pill insta ${status.instaTrialReel ? 'active' : ''}`}>IT</span>
+            <span className={`type-pill yt ${status.youtubeVideo ? 'active' : ''}`}>YV</span>
+            <span className={`type-pill yt ${status.youtubeShorts ? 'active' : ''}`}>YS</span>
           </div>
-        </div>
+        </button>
       )
     }
 
@@ -149,7 +214,7 @@ function App() {
       const key = getDateKey(checkDate)
       const status = postData[key]
       
-      if (status && status.instagram && status.youtube) {
+      if (status && hasAnyInsta(status) && hasAnyYouTube(status)) {
         streak++
       } else {
         break
@@ -174,12 +239,12 @@ function App() {
               <div className="stat-label">Day Streak</div>
             </div>
             <div className="stat-card">
-              <div className="stat-value">{Object.values(postData).filter(d => d.instagram).length}</div>
-              <div className="stat-label">Instagram Posts</div>
+              <div className="stat-value">{Object.values(postData).filter(hasAnyInsta).length}</div>
+              <div className="stat-label">Instagram Days</div>
             </div>
             <div className="stat-card">
-              <div className="stat-value">{Object.values(postData).filter(d => d.youtube).length}</div>
-              <div className="stat-label">YouTube Shorts</div>
+              <div className="stat-value">{Object.values(postData).filter(hasAnyYouTube).length}</div>
+              <div className="stat-label">YouTube Days</div>
             </div>
           </div>
 
@@ -203,14 +268,68 @@ function App() {
 
           <div className="legend">
             <div className="legend-item">
-              <div className="legend-icon instagram"></div>
-              <span>Instagram</span>
+              <div className="legend-icon insta"></div>
+              <span>IR / IT</span>
             </div>
             <div className="legend-item">
-              <div className="legend-icon youtube"></div>
-              <span>YouTube</span>
+              <div className="legend-icon yt"></div>
+              <span>YV / YS</span>
             </div>
           </div>
+
+          {activeDate && (
+            <div className="modal-overlay" role="presentation" onClick={closeDay}>
+              <div
+                className="modal"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Edit day"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-header">
+                  <div className="modal-title">
+                    {activeDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
+                  </div>
+                  <button type="button" className="modal-close" onClick={closeDay} aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18"></path>
+                      <path d="M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                {(() => {
+                  const key = getDateKey(activeDate)
+                  const status = postData[key] || EMPTY_STATUS
+
+                  const rows: Array<{ type: PostType; label: string; checked: boolean }> = [
+                    { type: 'instaReel', label: 'Instagram Reel', checked: status.instaReel },
+                    { type: 'instaTrialReel', label: 'Instagram Trial Reel', checked: status.instaTrialReel },
+                    { type: 'youtubeVideo', label: 'YouTube Video', checked: status.youtubeVideo },
+                    { type: 'youtubeShorts', label: 'YouTube Shorts', checked: status.youtubeShorts },
+                  ]
+
+                  return (
+                    <div className="modal-body">
+                      {rows.map((row) => (
+                        <button
+                          key={row.type}
+                          type="button"
+                          className="option-row"
+                          onClick={() => toggleTypeForDateKey(key, row.type)}
+                        >
+                          <span className="option-label">{row.label}</span>
+                          <span className={`switch ${row.checked ? 'on' : ''}`} aria-hidden="true">
+                            <span className="switch-thumb"></span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )
+                })()}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
