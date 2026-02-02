@@ -303,8 +303,8 @@ function App() {
                   const status = postData[key] || EMPTY_STATUS
 
                   const rows: Array<{ type: PostType; label: string; checked: boolean }> = [
-                    { type: 'instaReel', label: 'Instagram Reel', checked: status.instaReel },
-                    { type: 'instaTrialReel', label: 'Instagram Trial Reel', checked: status.instaTrialReel },
+                    { type: 'instaReel', label: 'Instagram Reel/Post', checked: status.instaReel },
+                    { type: 'instaTrialReel', label: 'Instagram Trial Reel/Post', checked: status.instaTrialReel },
                     { type: 'youtubeVideo', label: 'YouTube Video', checked: status.youtubeVideo },
                     { type: 'youtubeShorts', label: 'YouTube Shorts', checked: status.youtubeShorts },
                   ]
