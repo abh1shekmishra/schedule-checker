@@ -1,0 +1,501 @@
+:root {
+  --primary: #007AFF;
+  --instagram: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  --youtube: #FF0000;
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --bg-primary: rgba(255, 255, 255, 0.7);
+  --bg-secondary: rgba(255, 255, 255, 0.5);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.15);
+  --border: rgba(255, 255, 255, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background-attachment: fixed;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.glass-card {
+  background: var(--bg-primary);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 32px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 0 8px;
+}
+
+.month-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.nav-btn {
+  background: rgba(255, 255, 255, 0.6);
+  border: none;
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.05);
+}
+
+.nav-btn:active {
+  transform: scale(0.95);
+}
+
+.nav-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 8px;
+}
+
+.calendar {
+  margin-bottom: 24px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.calendar-day {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 12px 8px;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.calendar-day:not(.empty):hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-day.empty {
+  background: transparent;
+  border: none;
+}
+
+.calendar-day.today {
+  background: linear-gradient(135deg, #007AFF, #00C7FF);
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+}
+
+.calendar-day.today .day-number {
+  color: white;
+  font-weight: 700;
+}
+
+.day-number {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.post-status {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.status-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.3;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.status-btn:hover {
+  opacity: 0.5;
+  transform: scale(1.1);
+}
+
+.status-btn:active {
+  transform: scale(0.95);
+}
+
+.status-btn.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.status-btn.instagram.active {
+  background: var(--instagram);
+  box-shadow: 0 2px 8px rgba(225, 48, 108, 0.3);
+}
+
+.status-btn.youtube.active {
+  background: var(--youtube);
+  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+}
+
+.status-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.status-btn.active svg path,
+.status-btn.active svg rect,
+.status-btn.active svg circle {
+  stroke: white;
+  fill: white;
+}
+
+.legend {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.legend-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.legend-icon.instagram {
+  background: var(--instagram);
+}
+
+.legend-icon.youtube {
+  background: var(--youtube);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .glass-card {
+    padding: 24px 16px;
+    border-radius: 20px;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 16px 8px;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .calendar-day {
+    min-height: 85px;
+    padding: 8px 4px;
+  }
+
+  .day-number {
+    font-size: 0.9rem;
+  }
+
+  .status-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .status-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .weekday {
+    font-size: 0.75rem;
+    padding: 6px;
+  }
+
+  .month-title {
+    font-size: 1.25rem;
+  }
+
+  .nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 8px;
+  }
+
+  .glass-card {
+    padding: 20px 12px;
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+  }
+
+  .stats {
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 14px 6px;
+  }
+
+  .calendar-day {
+    min-height: 75px;
+    padding: 6px 2px;
+    gap: 4px;
+    border-radius: 10px;
+  }
+
+  .post-status {
+    gap: 3px;
+  }
+
+  .status-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .status-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .day-number {
+    font-size: 0.85rem;
+  }
+
+  .weekday {
+    font-size: 0.7rem;
+  }
+
+  .calendar-grid {
+    gap: 5px;
+  }
+
+  .weekdays {
+    gap: 5px;
+  }
+
+  .nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .legend {
+    gap: 16px;
+  }
+}
+
+/* iPhone specific optimizations */
+@supports (-webkit-touch-callout: none) {
+  .app {
+    min-height: -webkit-fill-available;
+  }
+  
+  .glass-card {
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+  }
+  
+  .status-btn {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Dark mode support (automatic based on system preference) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #f5f5f7;
+    --text-secondary: #a1a1a6;
+    --bg-primary: rgba(28, 28, 30, 0.8);
+    --bg-secondary: rgba(44, 44, 46, 0.8);
+    --border: rgba(255, 255, 255, 0.1);
+  }
+
+  .app {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  }
+
+  .stat-card,
+  .nav-btn {
+    background: rgba(44, 44, 46, 0.6);
+  }
+
+  .calendar-day {
+    background: rgba(44, 44, 46, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .calendar-day:not(.empty):hover {
+    background: rgba(58, 58, 60, 0.8);
+  }
+}
